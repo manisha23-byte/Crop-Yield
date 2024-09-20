@@ -222,4 +222,4 @@ def crop_data_stats():
     return render_template('crop_data_stats.html', crop_trends=crop_trends, location_distribution=location_distribution)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0',port=5000)
