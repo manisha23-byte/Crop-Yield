@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crop Data Statistics</title>
+    <link href="/static/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .chart-container {
+            margin: 20px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Crop Data Statistics</h2>
+
+        <!-- Display flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <ul>
+              {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+
+        <!-- Yield Trends Chart -->
+        <h3>Crop Yields Over Time</h3>
+        <div class="chart-container">
+            <canvas id="yieldChart" width="400" height="200"></canvas>
+        </div>
+
+        <!-- Location Distribution Chart -->
+        <h3>Crop Distribution by Location</h3>
+        <div class="chart-container">
+            <canvas id="locationChart" width="300" height="300"></canvas> <!-- Adjusted size here -->
+        </div>
+    </div>
+
+    <script>
+        // Fetching the JSON data from Flask safely
+        try {
+            const yieldData = JSON.parse('{{ crop_trends | tojson | safe }}');
+            const locationData = JSON.parse('{{ location_distribution | tojson | safe }}');
+
+            // Prepare data for yield chart
+            const yieldLabels = yieldData.map(data => data.crop_name);
+            const yieldCounts = yieldData.map(data => data.count);
+
+            // Yield Trends Chart
+            const ctxYield = document.getElementById('yieldChart').getContext('2d');
+            new Chart(ctxYield, {
+                type: 'bar',
+                data: {
+                    labels: yieldLabels,
+                    datasets: [{
+                        label: 'Number of Records',
+                        data: yieldCounts,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Prepare data for location chart
+            const locationLabels = locationData.map(data => data.location);
+            const locationCounts = locationData.map(data => data.count);
+
+            // Location Distribution Chart
+            const ctxLocation = document.getElementById('locationChart').getContext('2d');
+            new Chart(ctxLocation, {
+                type: 'pie',
+                data: {
+                    labels: locationLabels,
+                    datasets: [{
+                        label: 'Number of Records',
+                        data: locationCounts,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(255, 159, 64, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                }
+            });
+        } catch (error) {
+            console.error("Error parsing data: ", error);
+        }
+    </script>
+</body>
+
+</html>
